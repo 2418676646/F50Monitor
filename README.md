@@ -1,76 +1,42 @@
-# ZTE F50 Monitor (中兴 F50 随身 WiFi 状态监控)
+# ZTE F50 Monitor
 
-这是一个专为**中兴（ZTE）F50 5G 随身 WiFi** 打造的极客监控项目。它通过 Magisk 底层守护进程直接读取设备硬件数据，并将数据通过简洁美观的 macOS 状态栏进行实时展示。让你在使用电脑时，对 F50 的**温度、网速、信号、运营商、外网 IP** 等信息了如指掌。
+[English](#english) | [中文](#chinese)
 
-## ✨ 核心特性
+![Screenshot](mian.png)
 
-- **硬件级高精度采集**：基于 Go 编写原生 Linux ARM64 服务，通过 Magisk 注入运行在 F50 底层，直接读取 `/sys/class/thermal` 与 `/proc/net/dev`，提供极其精准的温度与流量/网速数据。
-- **极致的性能优化**：C/S 架构，设备端仅负责无状态的采集服务（运行极为轻量，不吃设备 CPU 电池），Mac 端负责渲染展示。
-- **一键化部署工具**：配套强大的 Python 部署脚本，只需手机连上 ADB 授权 Root 即可一键完成：自动交叉编译、Magisk 模块打包、自动刷入模块、自动重启激活服务。
-- **美观的 Mac 状态栏体验**：原生 SwiftUI 构建，菜单栏常驻显示精简关键信息（温度、上下行网速），点击展开详细悬浮窗（运营商、网络类型 NSA/SA、RSRP、WAN IP 等）。
+<h2 id="english">English</h2>
 
-## 📸 运行效果
+ZTE F50 Monitor is a hardware status monitoring tool designed for the ZTE F50 5G Portable Wi-Fi. It extracts real-time metrics (temperature, network speed, signal strength, and carrier information) directly from the device's hardware via a Magisk module, and displays them natively in the macOS menu bar.
 
-- 顶部菜单栏实时更新：`45.6° | ↑  1.2 M ↓ 15.6 M`
-- 点击弹出卡片面板详细显示（支持深色模式）。
+### Features
+- **Hardware-Level Precision**: A native Linux ARM64 daemon runs directly on the F50, reading thermal zones and network interfaces for accurate data without draining the device's battery.
+- **Automated Deployment**: Includes a Python-based CLI tool that handles cross-compiling, Magisk module packaging, and ADB flashing in one click.
+- **Native macOS Client**: A lightweight, SwiftUI-based menu bar application that polls the F50's API and displays live metrics seamlessly.
 
-## ⚙️ 环境依赖要求
+### Requirements
+- **F50 Device**: Rooted with Magisk installed. ADB debugging enabled and accessible from the Mac.
+- **Mac**: macOS 11.0 or later.
+- **Dependencies**: `go` (for compiling the device daemon) and `python3` (for the deployment script).
 
-### 1. 设备端 (中兴 F50)
-- 已获取 Root 权限，并安装了 [Magisk](https://github.com/topjohnwu/Magisk)。
-- 已开启 ADB 调试，并且您的 Mac 能够通过 USB 或 Wi-Fi (如 `192.168.0.1:5555`) 连接到设备。
-
-### 2. Mac 端
-- 安装有 macOS 11.0 及以上版本。
-- 安装有 `go` (用于交叉编译服务核心，可通过 `brew install go` 安装)。
-- 安装有 `python3` (Mac 自带，用于运行一键部署控制面板)。
-
-## 🚀 使用方法
-
-整个项目分为两部分部署：**设备底层模块安装**与**Mac 客户端编译**。
-
-### 第一步：在 F50 上部署并启动监控服务（后端）
-
-打开终端，进入项目根目录：
-
-```bash
-cd backend
-# 运行一键控制面板
-python3 launcher.py
-```
-
-控制面板启动后：
-1. 请确保顶部显示 `设备连接状态: 已连接 (F50 就绪)`。
-2. 键盘输入 `1` 并回车，执行 **一键编译并安装 Magisk 系统监控模块**。
-3. *注意：请在此过程中打开 Scrcpy 或查看手机屏幕，及时点击“允许(Grant)”授予 ADB Shell Root 权限。*
-4. 脚本会自动进行 Go 编译、模块打包和刷机，完成后设备会自动重启。
-5. 重启完成后，F50 已经成功在 `0.0.0.0:55050` 暴露了状态接口。
-
-### 第二步：编译运行 Mac 状态栏客户端（前端）
-
-进入项目前端目录：
-
-```bash
-cd frontend
-# 运行一键打包脚本
-sh build_app.sh
-```
-
-脚本会通过 `swiftc` 自动编译 SwiftUI 代码，并打包生成原生的 macOS 应用 `F50Monitor.app`。
-- 双击运行生成的 `F50Monitor.app` 即可。
-- 您可以将其拖入“应用程序”文件夹，并设置为开机自启。
-
-## 🔧 控制台 (launcher.py) 其他功能
-
-`launcher.py` 除了首次安装外，还提供以下快捷指令：
-- **[2] 查看日志**：拉取设备上监控守护进程的实时运行日志。
-- **[3/4/5] 服务管理**：远程热重启、启动、停止监控服务，无需重启手机。
-- **[6] 彻底卸载**：一键物理擦除模块所有数据，恢复干净出厂状态。
-- **[7] 一键更新**：当您修改了 `main.go` 后，使用此功能可以重新编译并热更新到设备中，无需再次走繁琐的 Magisk 安装流程。
-
-## ⚠️ 免责声明
-
-刷机与 Root 均存在一定风险，本工具仅供学习交流使用。由使用不当引起的设备损坏或数据丢失，需由使用者自行承担责任。
+### Usage
+1. **Deploy the backend**: Run `python3 backend/launcher.py` and select option `[1]` to build and install the Magisk module to your connected F50 device.
+2. **Build the frontend**: Run `sh frontend/build_app.sh` to compile the macOS menu bar app. Launch `F50Monitor.app` from the output directory.
 
 ---
-*Made with ❤️ for Geeks.*
+
+<h2 id="chinese">中文</h2>
+
+ZTE F50 Monitor 是一款专为中兴 F50 5G 随身 WiFi 设计的极客监控工具。它通过 Magisk 模块直接在底层读取硬件状态，并将关键数据（温度、上下行网速、运营商、外网 IP）实时展示在 Mac 电脑的菜单栏中。
+
+### 核心特性
+- **硬件级采集**：通过交叉编译的原生 ARM64 守护进程，直接读取设备的 `/sys/class/thermal` 和 `/proc/net/dev` 节点，提供高精度的温度与流量数据，且几乎不占用设备性能。
+- **自动化部署**：内置 Python 终端管理脚本。通过 ADB 连接手机后，即可一键完成跨平台编译、Magisk 模块打包、刷入系统与服务重启。
+- **原生 Mac 客户端**：采用纯 SwiftUI 构建，作为常驻状态栏应用运行，提供极简的网速温度看板与详细的弹出面板。
+
+### 环境依赖
+- **设备端**：已获取 Root 权限并安装 Magisk，开启 ADB 调试并连接至 Mac。
+- **Mac 端**：macOS 11.0 以上系统。需安装 `go`（用于交叉编译后端）和 `python3`。
+
+### 使用方法
+1. **后端部署**：在终端运行 `python3 backend/launcher.py`，选择 `[1]` 执行一键编译并刷入设备。请注意在设备上允许 Root 权限。
+2. **前端构建**：在终端运行 `sh frontend/build_app.sh` 编译 Mac 应用。运行生成的 `F50Monitor.app` 即可监控。
