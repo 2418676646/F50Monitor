@@ -1,0 +1,12 @@
+# 忽略 Mac 系统文件
+.DS_Store
+
+# 忽略构建产物
+frontend/F50Monitor.app/
+frontend/F50Monitor
+backend/build_temp/
+backend/f50_monitor_magisk.zip
+backend/f50_monitor
+
+# Go
+backend/go.sum
